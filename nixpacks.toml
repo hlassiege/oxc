@@ -1,5 +1,8 @@
 [phases.setup]
-nixPkgs = ["nodejs_22", "pnpm"]
+nixPkgs = ["nodejs_22"]
 
 [phases.install]
-cmds = ["corepack enable", "corepack prepare pnpm@10.18.3 --activate", "pnpm install"]
+cmds = [
+    "npm install -g npm@11.6.2",
+    "npm install"
+]
