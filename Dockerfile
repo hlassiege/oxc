@@ -1,21 +1,30 @@
-FROM node:22.20-alpine
+FROM node:22-alpine AS builder
+
+# Installer les dépendances système nécessaires
+RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# Copy package files first (for layer caching)
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json* ./
 
-# Install dependencies
-RUN npm ci
+RUN npm install -g npm@latest && \
+    npm ci
 
-# Copy source code
 COPY . .
 
-# Build
 RUN npm run build
 
-# Expose port
+FROM node:22-alpine AS runner
+
+WORKDIR /app
+
+COPY --from=builder /app/.output /app/.output
+COPY --from=builder /app/package.json /app/package.json
+
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3000
+
 EXPOSE 3000
 
-# Start
 CMD ["node", ".output/server/index.mjs"]
